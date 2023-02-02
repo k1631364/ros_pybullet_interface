@@ -187,22 +187,29 @@ class Node(RosNode):
             object = self.pybullet_objects[req.object_name]
         else:
             success = False
-            message = f"did not recognize object name"
+            message = f"did not recognize object name (get dynamics)"
             self.logerr(message)
             return GetObjectDynamicsResponse(success=success, message=message, object_dynamics=None)
         
+        link_idx = req.link_idx
         # Get object type
         if isinstance(object, PybulletCollisionObject):
             object_type = PybulletCollisionObject
         elif isinstance(object, PybulletDynamicObject):
             object_type = PybulletDynamicObject
         else:
+            #link_idx = 20
+            message = "hi im here*************************************"
+            self.logerr(message)
+        """
+            else:
             success = False
             message = f"did not recognize object type"
             self.logerr(message)
             return GetObjectDynamicsResponse(success=success, message=message, object_dynamics=None)
-
-        object_dynamics = object.get_dynamics()
+        """
+        
+        object_dynamics = object.get_dynamics(link_index = link_idx)
 
         object_dynamics_msg = ObjectDynamics()
         object_dynamics_msg.mass = object_dynamics['mass']
@@ -214,6 +221,8 @@ class Node(RosNode):
         object_dynamics_msg.contact_damping = object_dynamics['contactDamping']
         object_dynamics_msg.contact_stiffness = object_dynamics['contactStiffness']
         object_dynamics_msg.collision_margin = object_dynamics['collisionMargin']
+        
+        
 
         return GetObjectDynamicsResponse(success=success, message=message, object_dynamics=object_dynamics_msg)
 
@@ -228,7 +237,7 @@ class Node(RosNode):
             object = self.pybullet_objects[req.object_name]
         else:
             success = False
-            message = f"did not recognize object name"
+            message = f"did not recognize object name (change dynamics)"
             self.logerr(message)
             return ChangeObjectDynamicsResponse(success=success, message=message)
 
@@ -238,11 +247,15 @@ class Node(RosNode):
         elif isinstance(object, PybulletDynamicObject):
             object_type = PybulletDynamicObject
         else:
+            pass
+        """
+        else:
             success = False
             message = f"did not recognize object type"
             self.logerr(message)
             return ChangeObjectDynamicsResponse(success=success, message=message)
-        
+        """
+        link_idx = req.link_idx
         object_dynamics_msg = req.object_dynamics
         object_dynamics = {}
 
@@ -256,7 +269,7 @@ class Node(RosNode):
         object_dynamics['contactStiffness'] = object_dynamics_msg.contact_stiffness
         object_dynamics['collisionMargin'] = object_dynamics_msg.collision_margin
 
-        object.change_dynamics(object_dynamics)
+        object.change_dynamics(object_dynamics, link_index=link_idx)
 
         return ChangeObjectDynamicsResponse(success=success, message=message)
 

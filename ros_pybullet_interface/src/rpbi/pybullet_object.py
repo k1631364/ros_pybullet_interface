@@ -1,6 +1,7 @@
 import numpy as np
 from custom_ros_tools.config import replace_package
 from abc import ABC, abstractmethod
+import rospy
 
 
 class PybulletObject(ABC):

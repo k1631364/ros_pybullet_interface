@@ -1,4 +1,5 @@
 string object_name
+int64 link_idx
 ros_pybullet_interface/ObjectDynamics object_dynamics
 ---
 bool success
