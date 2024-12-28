@@ -1,0 +1,6 @@
+string object_name
+int64 link_idx
+---
+bool success
+string message
+# ros_pybullet_interface/ObjectDynamics object_dynamics

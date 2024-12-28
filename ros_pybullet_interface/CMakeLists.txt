@@ -32,6 +32,7 @@ add_service_files(
   AddPybulletObject.srv
   GetObjectDynamics.srv
   ChangeObjectDynamics.srv
+  GetObjectPosition.srv
 )
 
 generate_messages(

@@ -19,6 +19,7 @@ from ros_pybullet_interface.msg import ObjectDynamics
 from ros_pybullet_interface.srv import AddPybulletObject, AddPybulletObjectResponse
 from ros_pybullet_interface.srv import GetObjectDynamics, GetObjectDynamicsResponse
 from ros_pybullet_interface.srv import ChangeObjectDynamics, ChangeObjectDynamicsResponse
+from ros_pybullet_interface.srv import GetObjectPosition, GetObjectPositionResponse
 
 from custom_ros_tools.config import load_config, load_configs
 from cob_srvs.srv import SetString, SetStringResponse
@@ -49,6 +50,7 @@ class PybulletObjects(dict):
 class Node(RosNode):
 
     def __init__(self):
+        self.counter = 0
 
         # Initialize node
         super().__init__('ros_pybullet_interface')
@@ -77,6 +79,9 @@ class Node(RosNode):
         add_list(self.config.get('soft_objects', []), PybulletSoftBodyObject)
         add_list(self.config.get('urdfs', []), PybulletURDF)
 
+        self.loginfo("Available PyBullet objects:")
+        self.loginfo(self.pybullet_objects)
+
         rgbd_sensor = self.config.get('rgbd_sensor')
         if rgbd_sensor:
             self.pybullet_objects.add(rgbd_sensor, PybulletRGBDSensor)
@@ -86,6 +91,7 @@ class Node(RosNode):
         self.Service('rpbi/remove_pybullet_object', SetString, self.service_remove_pybullet_object)
         self.Service('rpbi/get_pybullet_object_dynamics', GetObjectDynamics, self.service_get_pybullet_object_dynamics)
         self.Service('rpbi/change_pybullet_object_dynamics', ChangeObjectDynamics, self.service_change_pybullet_object_dynamics)
+        self.Service('rpbi/get_pybullet_object_position', GetObjectPosition, self.service_get_pybullet_object_position)
 
         # Start pybullet
         if self.pybullet_instance.start_pybullet_after_initialization:
@@ -208,6 +214,7 @@ class Node(RosNode):
             self.logerr(message)
             return GetObjectDynamicsResponse(success=success, message=message, object_dynamics=None)
         """
+        self.logerr(dir(object))
         
         object_dynamics = object.get_dynamics(link_index = link_idx)
 
@@ -225,7 +232,71 @@ class Node(RosNode):
         
 
         return GetObjectDynamicsResponse(success=success, message=message, object_dynamics=object_dynamics_msg)
+    
+    def service_get_pybullet_object_position(self, req):
 
+        success = True
+        message = 'got pybullet object position'
+
+        # Get object
+        if req.object_name in self.pybullet_objects:
+            object = self.pybullet_objects[req.object_name]
+        else:
+            success = False
+            message = f"did not recognize object name (get position)"
+            self.logerr(message)
+            # return GetObjectPositionResponse(success=success, message=message, object_dynamics=None)
+            return GetObjectPositionResponse(success=success, message=message)
+        
+        link_idx = req.link_idx
+        # Get object type
+        if isinstance(object, PybulletCollisionObject):
+            object_type = PybulletCollisionObject
+        elif isinstance(object, PybulletDynamicObject):
+            object_type = PybulletDynamicObject
+        else:
+            #link_idx = 20
+            message = "hi im here*************************************"
+            self.logerr(message)
+        """
+            else:
+            success = False
+            message = f"did not recognize object type"
+            self.logerr(message)
+            return GetObjectPositionResponse(success=success, message=message, object_dynamics=None)
+        """
+
+        # Get the current position and orientation of the puck
+        current_position = object.basePosition
+        current_orientation = object.baseOrientation
+
+        # Set new position and orientation for the puck
+        new_position = [0.6, -0.1, -0.09]  # New position (x, y, z)
+        new_orientation = [0, 0, 0.707, -0.707]  # New orientation (quaternion)
+
+        # Reset the position and orientation
+        object.pb.resetBasePositionAndOrientation(object.body_unique_id, new_position, new_orientation)
+
+        self.logwarn(self.counter)
+        self.logwarn(current_position)
+        self.logwarn(current_orientation)
+        self.counter+=1
+                
+        # object_dynamics = object.get_dynamics(link_index = link_idx)
+
+        # object_dynamics_msg = ObjectDynamics()
+        # object_dynamics_msg.mass = object_dynamics['mass']
+        # object_dynamics_msg.lateral_friction = object_dynamics['lateralFriction']
+        # object_dynamics_msg.local_inertia_diagonal = object_dynamics['localInertiaDiagonal']
+        # object_dynamics_msg.restitution = object_dynamics['restitution']
+        # object_dynamics_msg.rolling_friction = object_dynamics['rollingFriction']
+        # object_dynamics_msg.spinning_friction = object_dynamics['spinningFriction']
+        # object_dynamics_msg.contact_damping = object_dynamics['contactDamping']
+        # object_dynamics_msg.contact_stiffness = object_dynamics['contactStiffness']
+        # object_dynamics_msg.collision_margin = object_dynamics['collisionMargin']
+
+        # return GetObjectPositionResponse(success=success, message=message, object_dynamics=object_dynamics_msg)
+        return GetObjectPositionResponse(success=success, message=message)
 
     def service_change_pybullet_object_dynamics(self, req):
 
