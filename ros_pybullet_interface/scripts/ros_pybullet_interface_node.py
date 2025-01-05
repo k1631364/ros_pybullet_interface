@@ -271,7 +271,7 @@ class Node(RosNode):
         current_orientation = object.baseOrientation
 
         # Set new position and orientation for the puck
-        new_position = [0.6, -0.1, -0.09]  # New position (x, y, z)
+        new_position = [0.6, 0.2, -0.09]  # New position (x, y, z)
         new_orientation = [0, 0, 0.707, -0.707]  # New orientation (quaternion)
 
         # Reset the position and orientation
