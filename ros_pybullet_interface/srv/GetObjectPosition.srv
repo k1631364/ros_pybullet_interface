@@ -1,5 +1,8 @@
 string object_name
 int64 link_idx
+float64 pos_x
+float64 pos_y
+float64 pos_z
 ---
 bool success
 string message
