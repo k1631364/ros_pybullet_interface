@@ -273,7 +273,8 @@ class Node(RosNode):
         # Set new position and orientation for the puck
         # new_position = [0.6, 0.2, -0.09]  # New position (x, y, z)
         new_position = [req.pos_x, req.pos_y, req.pos_z]  # New position (x, y, z)
-        new_orientation = [0, 0, 0.707, -0.707]  # New orientation (quaternion)
+        # new_orientation = [0, 0, 0.707, -0.707]  # New orientation (quaternion)
+        new_orientation = [req.quat_x, req.quat_y, req.quat_z, req.quat_w]  # New orientation (quaternion)
 
         # Reset the position and orientation
         object.pb.resetBasePositionAndOrientation(object.body_unique_id, new_position, new_orientation)
